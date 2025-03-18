@@ -254,88 +254,6 @@
       font-size: 12px;
       resize: vertical;
     }
-    
-    /* 添加套组预设按钮样式 */
-    .preset-section {
-      margin-top: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .preset-title {
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: #4b5563;
-    }
-    
-    .preset-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    
-    .preset-button {
-      background-color: #f0f9ff;
-      border: 1px solid #93c5fd;
-      color: #1e40af;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .preset-button:hover {
-      background-color: #dbeafe;
-      transform: translateY(-1px);
-    }
-    
-    .preset-button:active {
-      transform: translateY(0);
-    }
-    
-    /* 添加详细信息模态框样式 */
-    .component-details {
-      margin-top: 16px;
-    }
-    
-    .component-details-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #2563eb;
-    }
-    
-    .component-details-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    
-    .component-details-table th,
-    .component-details-table td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .component-details-table th {
-      font-weight: 500;
-      color: #4b5563;
-      background-color: #f9fafb;
-    }
-    
-    .component-details-table td:last-child {
-      text-align: right;
-      font-weight: 500;
-    }
-    
-    .component-details-total {
-      margin-top: 12px;
-      text-align: right;
-      font-weight: 600;
-      color: #2563eb;
-    }
   </style>
 </head>
 <body>
@@ -355,15 +273,6 @@
         <span id="storageStatus" class="storage-status">数据已保存!</span>
       </div>
       <button id="toggleNotes">显示备注</button>
-    </div>
-    
-    <!-- 添加套组预设按钮 -->
-    <div class="preset-section">
-      <div class="preset-title">套组预设:</div>
-      <div class="preset-buttons">
-        <button id="applyDuraAce" class="preset-button">应用 Shimano Dura-Ace 套组数据</button>
-        <button id="viewDuraAceDetails" class="preset-button">查看 Dura-Ace 详细数据</button>
-      </div>
     </div>
     
     <div class="grid" id="componentsGrid">
@@ -424,80 +333,10 @@
       </div>
     </div>
   </div>
-  
-  <!-- Dura-Ace 详细数据模态框 -->
-  <div id="duraAceDetailsModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Shimano Dura-Ace R9270 Di2 套组详细数据</h3>
-        <button class="modal-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="component-details">
-          <div class="component-details-title">组件重量明细</div>
-          <table class="component-details-table">
-            <thead>
-              <tr>
-                <th>组件类别</th>
-                <th>型号/规格</th>
-                <th>重量 (g)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>电子变速手变</td>
-                <td>ST-R9270</td>
-                <td>278</td>
-              </tr>
-              <tr>
-                <td>油压碟刹夹器</td>
-                <td>BR-R9270 (前+后)</td>
-                <td>226</td>
-              </tr>
-              <tr>
-                <td>飞轮</td>
-                <td>CS-R9200 11-34T 12速</td>
-                <td>257</td>
-              </tr>
-              <tr>
-                <td>链条</td>
-                <td>CN-M9100 12速</td>
-                <td>256</td>
-              </tr>
-              <tr>
-                <td>中轴</td>
-                <td>SM-RT900</td>
-                <td>68</td>
-              </tr>
-              <tr>
-                <td>功率计牙盘组</td>
-                <td>FC-R9200-P 50-34T</td>
-                <td>614</td>
-              </tr>
-              <tr>
-                <td>后拨链器</td>
-                <td>RD-R9250 12速</td>
-                <td>215</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="component-details-total">
-            套组总重量: 1914 克
-          </div>
-        </div>
-        <div class="preset-buttons" style="margin-top: 16px;">
-          <button id="applyDuraAceFromModal" class="preset-button">应用这些数据到计算器</button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-close-btn">关闭</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // 默认组件数据
+      // 默认组件数据 - 已更新为Shimano具体组件
       const defaultComponents = {
         frame: { name: '车架', weight: 900, note: '' },
         fork: { name: '前叉', weight: 350, note: '' },
@@ -505,8 +344,16 @@
         stem: { name: '把立', weight: 120, note: '' },
         seatpost: { name: '座管', weight: 200, note: '' },
         saddle: { name: '座垫', weight: 180, note: '' },
-        groupset: { name: '变速套件', weight: 2200, note: '' },
-        chain: { name: '链条', weight: 250, note: '' },
+        
+        // 将原来的变速套件拆分为具体组件
+        shifters: { name: '变速手变', weight: 278, note: 'ST-R9270' },
+        brakeCaliper: { name: '碟刹夹器(前+后)', weight: 226, note: 'BR-R9270' },
+        cassette: { name: '飞轮', weight: 257, note: 'CS-R9200 11-34T 12速' },
+        chain: { name: '链条', weight: 256, note: 'CN-M9100 12速' },
+        bottomBracket: { name: '中轴', weight: 68, note: 'SM-RT900' },
+        crankset: { name: '牙盘组', weight: 614, note: 'FC-R9200-P 50-34T' },
+        derailleur: { name: '后拨链器', weight: 215, note: 'RD-R9250 12速' },
+        
         wheels: { name: '车轮组', weight: 1600, note: '' },
         outerTires: { name: '外胎(一对)', weight: 400, note: '' },
         innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
@@ -516,17 +363,6 @@
         computerMount: { name: '码表架', weight: 30, note: '' },
         bolts: { name: '螺丝配件', weight: 120, note: '' },
         other: { name: '其他配件', weight: 100, note: '' },
-      };
-      
-      // Shimano Dura-Ace 套组数据
-      const duraAceComponents = {
-        shifters: { name: '电子变速手变', weight: 278, note: 'ST-R9270' },
-        brakes: { name: '油压碟刹夹器(前+后)', weight: 226, note: 'BR-R9270' },
-        cassette: { name: '飞轮', weight: 257, note: 'CS-R9200 11-34T 12速' },
-        chain: { name: '链条', weight: 256, note: 'CN-M9100 12速' },
-        bottomBracket: { name: '中轴', weight: 68, note: 'SM-RT900' },
-        crankset: { name: '功率计牙盘组', weight: 614, note: 'FC-R9200-P 50-34T' },
-        rearDerailleur: { name: '后拨链器', weight: 215, note: 'RD-R9250 12速' },
       };
       
       // 初始化组件数据 - 尝试从localStorage加载
@@ -551,10 +387,6 @@
       const exportText = document.getElementById('exportText');
       const copyExportBtn = document.getElementById('copyExport');
       const downloadExportBtn = document.getElementById('downloadExport');
-      const applyDuraAceBtn = document.getElementById('applyDuraAce');
-      const viewDuraAceDetailsBtn = document.getElementById('viewDuraAceDetails');
-      const duraAceDetailsModal = document.getElementById('duraAceDetailsModal');
-      const applyDuraAceFromModalBtn = document.getElementById('applyDuraAceFromModal');
       
       // 从localStorage加载数据
       function loadFromLocalStorage() {
@@ -703,14 +535,11 @@
       
       // 重置全部
       function resetAll() {
-        if (confirm('确定要重置所有数据吗？这将清除所有自定义重量和备注。')) {
-          components = JSON.parse(JSON.stringify(defaultComponents));
-          
-          renderComponents();
-          calculateTotalWeight();
-          updateConfigList();
-          saveToLocalStorage();
-        }
+        components = JSON.parse(JSON.stringify(defaultComponents));
+        
+        renderComponents();
+        calculateTotalWeight();
+        updateConfigList();
       }
       
       // 导出数据
@@ -773,7 +602,7 @@
         const importedKeys = Object.keys(data);
         
         // 检查是否至少包含一些关键组件
-        const essentialKeys = ['frame', 'wheels', 'groupset'];
+        const essentialKeys = ['frame', 'wheels', 'shifters', 'crankset'];
         const hasEssentialKeys = essentialKeys.every(key => importedKeys.includes(key));
         
         if (!hasEssentialKeys) return false;
@@ -818,4 +647,69 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportText.value);
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode
+        downloadAnchorNode.setAttribute("download", "bike-weight-config.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      }
+      
+      // 关闭模态框
+      function closeModal() {
+        exportModal.style.display = 'none';
+      }
+      
+      // 切换备注显示
+      toggleNotesBtn.addEventListener('click', function() {
+        showNotes = !showNotes;
+        this.textContent = showNotes ? '隐藏备注' : '显示备注';
+        
+        const noteInputs = document.querySelectorAll('.note-input');
+        noteInputs.forEach(input => {
+          if (showNotes) {
+            input.classList.remove('hidden');
+          } else {
+            input.classList.add('hidden');
+          }
+        });
+      });
+      
+      // 保存数据按钮事件
+      saveDataBtn.addEventListener('click', saveToLocalStorage);
+      
+      // 重置按钮事件
+      resetWeightsBtn.addEventListener('click', resetWeights);
+      resetAllBtn.addEventListener('click', resetAll);
+      
+      // 导出/导入事件
+      exportDataBtn.addEventListener('click', exportData);
+      importDataBtn.addEventListener('click', function() {
+        importInput.click();
+      });
+      importInput.addEventListener('change', importData);
+      
+      // 导出模态框事件
+      copyExportBtn.addEventListener('click', copyExportData);
+      downloadExportBtn.addEventListener('click', downloadExportData);
+      document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', closeModal);
+      });
+      exportModal.addEventListener('click', function(e) {
+        if (e.target === exportModal) {
+          closeModal();
+        }
+      });
+      
+      // 自动保存功能 - 每30秒保存一次
+      setInterval(saveToLocalStorage, 30000);
+      
+      // 页面关闭前保存
+      window.addEventListener('beforeunload', saveToLocalStorage);
+      
+      // 初始化
+      renderComponents();
+      calculateTotalWeight();
+      updateConfigList();
+    });
+  </script>
+</body>
+</html>
