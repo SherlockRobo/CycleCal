@@ -46,7 +46,7 @@
     }
     .button-container {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       margin-bottom: 8px;
     }
     .grid {
@@ -162,6 +162,98 @@
     .hidden {
       display: none;
     }
+    .storage-status {
+      font-size: 12px;
+      color: #10b981;
+      margin-left: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .storage-status.show {
+      opacity: 1;
+    }
+    .storage-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .storage-buttons button {
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+    .export-import {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed #e5e7eb;
+    }
+    .export-import h3 {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .export-import-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .export-import-buttons button {
+      font-size: 12px;
+    }
+    #importInput {
+      display: none;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 24px;
+      border-radius: 8px;
+      max-width: 90%;
+      width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-body {
+      margin-bottom: 16px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
   </style>
 </head>
 <body>
@@ -176,6 +268,10 @@
     <div class="separator"></div>
     
     <div class="button-container">
+      <div class="storage-buttons">
+        <button id="saveData" class="button-primary">保存数据</button>
+        <span id="storageStatus" class="storage-status">数据已保存!</span>
+      </div>
       <button id="toggleNotes">显示备注</button>
     </div>
     
@@ -204,15 +300,44 @@
       </div>
     </div>
     
+    <div class="export-import">
+      <h3>数据导入/导出:</h3>
+      <div class="export-import-buttons">
+        <button id="exportData">导出数据</button>
+        <button id="importDataBtn">导入数据</button>
+        <input type="file" id="importInput" accept=".json">
+      </div>
+    </div>
+    
     <div class="footer-note">
-      注：此计算器提供的是估算值，实际车辆重量可能因材质和规格而有所不同。
+      注：此计算器提供的是估算值，实际车辆重量可能因材质和规格而有所不同。<br>
+      您的数据会自动保存在浏览器中，刷新页面或下次访问时会自动加载。
+    </div>
+  </div>
+  
+  <!-- 导出数据模态框 -->
+  <div id="exportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>导出数据</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>复制下面的JSON数据或下载为文件:</p>
+        <textarea id="exportText" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="copyExport">复制</button>
+        <button id="downloadExport">下载</button>
+        <button class="modal-close-btn">关闭</button>
+      </div>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // 初始化组件数据
-      const components = {
+      // 默认组件数据
+      const defaultComponents = {
         frame: { name: '车架', weight: 900, note: '' },
         fork: { name: '前叉', weight: 350, note: '' },
         handlebar: { name: '车把', weight: 220, note: '' },
@@ -232,6 +357,9 @@
         other: { name: '其他配件', weight: 100, note: '' },
       };
       
+      // 初始化组件数据 - 尝试从localStorage加载
+      let components = loadFromLocalStorage() || JSON.parse(JSON.stringify(defaultComponents));
+      
       let showNotes = false;
       
       // 获取DOM元素
@@ -242,6 +370,49 @@
       const totalWeightGrams = document.getElementById('totalWeightGrams');
       const totalWeightKg = document.getElementById('totalWeightKg');
       const configList = document.getElementById('configList');
+      const saveDataBtn = document.getElementById('saveData');
+      const storageStatus = document.getElementById('storageStatus');
+      const exportDataBtn = document.getElementById('exportData');
+      const importDataBtn = document.getElementById('importDataBtn');
+      const importInput = document.getElementById('importInput');
+      const exportModal = document.getElementById('exportModal');
+      const exportText = document.getElementById('exportText');
+      const copyExportBtn = document.getElementById('copyExport');
+      const downloadExportBtn = document.getElementById('downloadExport');
+      
+      // 从localStorage加载数据
+      function loadFromLocalStorage() {
+        try {
+          const savedData = localStorage.getItem('bikeWeightCalculator');
+          if (savedData) {
+            return JSON.parse(savedData);
+          }
+          return null;
+        } catch (error) {
+          console.error('Error loading data from localStorage:', error);
+          return null;
+        }
+      }
+      
+      // 保存数据到localStorage
+      function saveToLocalStorage() {
+        try {
+          localStorage.setItem('bikeWeightCalculator', JSON.stringify(components));
+          showStorageStatus();
+          return true;
+        } catch (error) {
+          console.error('Error saving data to localStorage:', error);
+          return false;
+        }
+      }
+      
+      // 显示保存状态
+      function showStorageStatus() {
+        storageStatus.classList.add('show');
+        setTimeout(() => {
+          storageStatus.classList.remove('show');
+        }, 2000);
+      }
       
       // 渲染组件
       function renderComponents() {
@@ -345,27 +516,8 @@
       // 重置重量
       function resetWeights() {
         Object.keys(components).forEach(key => {
-          const defaultWeights = {
-            frame: 900,
-            fork: 350,
-            handlebar: 220,
-            stem: 120,
-            seatpost: 200,
-            saddle: 180,
-            groupset: 2200,
-            chain: 250,
-            wheels: 1600,
-            outerTires: 400,
-            innerTubes: 100,
-            pedals: 250,
-            bottleCages: 60,
-            computer: 80,
-            computerMount: 30,
-            bolts: 120,
-            other: 100,
-          };
-          
-          components[key].weight = defaultWeights[key];
+          const defaultWeight = defaultComponents[key].weight;
+          components[key].weight = defaultWeight;
         });
         
         renderComponents();
@@ -375,34 +527,127 @@
       
       // 重置全部
       function resetAll() {
-        Object.keys(components).forEach(key => {
-          const defaultWeights = {
-            frame: 900,
-            fork: 350,
-            handlebar: 220,
-            stem: 120,
-            seatpost: 200,
-            saddle: 180,
-            groupset: 2200,
-            chain: 250,
-            wheels: 1600,
-            outerTires: 400,
-            innerTubes: 100,
-            pedals: 250,
-            bottleCages: 60,
-            computer: 80,
-            computerMount: 30,
-            bolts: 120,
-            other: 100,
-          };
-          
-          components[key].weight = defaultWeights[key];
-          components[key].note = '';
-        });
+        components = JSON.parse(JSON.stringify(defaultComponents));
         
         renderComponents();
         calculateTotalWeight();
         updateConfigList();
+      }
+      
+      // 导出数据
+      function exportData() {
+        const dataToExport = {
+          components: components,
+          exportDate: new Date().toISOString(),
+          version: '1.0'
+        };
+        
+        const jsonString = JSON.stringify(dataToExport, null, 2);
+        exportText.value = jsonString;
+        
+        exportModal.style.display = 'flex';
+      }
+      
+      // 导入数据
+      function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const importedData = JSON.parse(e.target.result);
+            
+            if (importedData && importedData.components) {
+              // 验证导入的数据结构
+              const isValid = validateImportedData(importedData.components);
+              
+              if (isValid) {
+                components = importedData.components;
+                renderComponents();
+                calculateTotalWeight();
+                updateConfigList();
+                saveToLocalStorage();
+                alert('数据导入成功!');
+              } else {
+                alert('导入的数据格式无效!');
+              }
+            } else {
+              alert('导入的数据格式无效!');
+            }
+          } catch (error) {
+            console.error('Error importing data:', error);
+            alert('导入数据时发生错误!');
+          }
+          
+          // 重置文件输入
+          importInput.value = '';
+        };
+        
+        reader.readAsText(file);
+      }
+      
+      // 验证导入的数据
+      function validateImportedData(data) {
+        // 检查是否包含所有必要的组件
+        const requiredKeys = Object.keys(defaultComponents);
+        const importedKeys = Object.keys(data);
+        
+        // 检查是否至少包含一些关键组件
+        const essentialKeys = ['frame', 'wheels', 'groupset'];
+        const hasEssentialKeys = essentialKeys.every(key => importedKeys.includes(key));
+        
+        if (!hasEssentialKeys) return false;
+        
+        // 检查每个组件是否有正确的结构
+        for (const key of importedKeys) {
+          const component = data[key];
+          if (!component.name || typeof component.weight !== 'number') {
+            // 尝试修复weight类型
+            if (typeof component.weight === 'string') {
+              component.weight = parseInt(component.weight) || 0;
+            } else if (component.weight === undefined) {
+              component.weight = 0;
+            }
+          }
+          
+          // 确保note属性存在
+          if (component.note === undefined) {
+            component.note = '';
+          }
+        }
+        
+        // 添加缺失的组件
+        for (const key of requiredKeys) {
+          if (!data[key]) {
+            data[key] = JSON.parse(JSON.stringify(defaultComponents[key]));
+          }
+        }
+        
+        return true;
+      }
+      
+      // 复制导出的数据
+      function copyExportData() {
+        exportText.select();
+        document.execCommand('copy');
+        alert('数据已复制到剪贴板!');
+      }
+      
+      // 下载导出的数据
+      function downloadExportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportText.value);
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "bike-weight-config.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      }
+      
+      // 关闭模态框
+      function closeModal() {
+        exportModal.style.display = 'none';
       }
       
       // 切换备注显示
@@ -420,9 +665,37 @@
         });
       });
       
+      // 保存数据按钮事件
+      saveDataBtn.addEventListener('click', saveToLocalStorage);
+      
       // 重置按钮事件
       resetWeightsBtn.addEventListener('click', resetWeights);
       resetAllBtn.addEventListener('click', resetAll);
+      
+      // 导出/导入事件
+      exportDataBtn.addEventListener('click', exportData);
+      importDataBtn.addEventListener('click', function() {
+        importInput.click();
+      });
+      importInput.addEventListener('change', importData);
+      
+      // 导出模态框事件
+      copyExportBtn.addEventListener('click', copyExportData);
+      downloadExportBtn.addEventListener('click', downloadExportData);
+      document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', closeModal);
+      });
+      exportModal.addEventListener('click', function(e) {
+        if (e.target === exportModal) {
+          closeModal();
+        }
+      });
+      
+      // 自动保存功能 - 每30秒保存一次
+      setInterval(saveToLocalStorage, 30000);
+      
+      // 页面关闭前保存
+      window.addEventListener('beforeunload', saveToLocalStorage);
       
       // 初始化
       renderComponents();
