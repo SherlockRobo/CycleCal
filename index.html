@@ -254,17 +254,6 @@
       font-size: 12px;
       resize: vertical;
     }
-    /* 新增的组件类别样式 */
-    .component-category {
-      margin-top: 16px;
-      margin-bottom: 8px;
-      font-weight: 600;
-      font-size: 16px;
-      color: #4b5563;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #e5e7eb;
-      grid-column: 1 / -1;
-    }
   </style>
 </head>
 <body>
@@ -347,78 +336,29 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // 默认组件数据 - 已更新，增加了新组件
+      // 默认组件数据
       const defaultComponents = {
-        // 车架组件
-        frame: { name: '车架', weight: 900, note: '', category: 'frame' },
-        fork: { name: '前叉', weight: 350, note: '', category: 'frame' },
-        
-        // 传动系统
-        crankset: { name: '曲柄', weight: 600, note: '', category: 'drivetrain' },
-        bottomBracket: { name: '五通', weight: 80, note: '', category: 'drivetrain' },
-        cassette: { name: '飞轮', weight: 300, note: '', category: 'drivetrain' },
-        chain: { name: '链条', weight: 250, note: '', category: 'drivetrain' },
-        frontDerailleur: { name: '前变速器', weight: 80, note: '', category: 'drivetrain' },
-        rearDerailleur: { name: '后变速器', weight: 200, note: '', category: 'drivetrain' },
-        frontShifter: { name: '前变速拨杆', weight: 120, note: '', category: 'drivetrain' },
-        rearShifter: { name: '后变速拨杆', weight: 120, note: '', category: 'drivetrain' },
-        
-        // 刹车系统
-        frontDiscBrake: { name: '前刹车盘', weight: 140, note: '', category: 'brakes' },
-        rearDiscBrake: { name: '后刹车盘', weight: 140, note: '', category: 'brakes' },
-        frontBrake: { name: '前刹车', weight: 150, note: '', category: 'brakes' },
-        rearBrake: { name: '后刹车', weight: 150, note: '', category: 'brakes' },
-        
-        // 车轮组
-        wheels: { name: '车轮组', weight: 1600, note: '', category: 'wheels' },
-        frontTire: { name: '前外胎', weight: 200, note: '', category: 'wheels' },
-        rearTire: { name: '后外胎', weight: 200, note: '', category: 'wheels' },
-        frontTube: { name: '前内胎', weight: 50, note: '', category: 'wheels' },
-        rearTube: { name: '后内胎', weight: 50, note: '', category: 'wheels' },
-        
-        // 操控系统
-        handlebar: { name: '车把', weight: 220, note: '', category: 'cockpit' },
-        stem: { name: '把立', weight: 120, note: '', category: 'cockpit' },
-        handlebarTape: { name: '把带', weight: 50, note: '', category: 'cockpit' },
-        
-        // 座椅系统
-        seatpost: { name: '座管', weight: 200, note: '', category: 'seating' },
-        saddle: { name: '座垫', weight: 180, note: '', category: 'seating' },
-        
-        // 附件
-        pedals: { name: '脚踏', weight: 250, note: '', category: 'accessories' },
-        bottleCages: { name: '水壶架', weight: 60, note: '', category: 'accessories' },
-        computer: { name: '码表', weight: 80, note: '', category: 'accessories' },
-        computerMount: { name: '码表架', weight: 30, note: '', category: 'accessories' },
-        battery: { name: '电池', weight: 50, note: '', category: 'accessories' },
-        bolts: { name: '螺丝配件', weight: 120, note: '', category: 'accessories' },
-        other: { name: '其他配件', weight: 100, note: '', category: 'accessories' },
-      };
-      
-      // 组件类别顺序和显示名称
-      const categories = {
-        'frame': '车架组件',
-        'drivetrain': '传动系统',
-        'brakes': '刹车系统',
-        'wheels': '车轮组',
-        'cockpit': '操控系统',
-        'seating': '座椅系统',
-        'accessories': '附件'
+        frame: { name: '车架', weight: 900, note: '' },
+        fork: { name: '前叉', weight: 350, note: '' },
+        handlebar: { name: '车把', weight: 220, note: '' },
+        stem: { name: '把立', weight: 120, note: '' },
+        seatpost: { name: '座管', weight: 200, note: '' },
+        saddle: { name: '座垫', weight: 180, note: '' },
+        groupset: { name: '变速套件', weight: 2200, note: '' },
+        chain: { name: '链条', weight: 250, note: '' },
+        wheels: { name: '车轮组', weight: 1600, note: '' },
+        outerTires: { name: '外胎(一对)', weight: 400, note: '' },
+        innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
+        pedals: { name: '脚踏', weight: 250, note: '' },
+        bottleCages: { name: '水壶架', weight: 60, note: '' },
+        computer: { name: '码表', weight: 80, note: '' },
+        computerMount: { name: '码表架', weight: 30, note: '' },
+        bolts: { name: '螺丝配件', weight: 120, note: '' },
+        other: { name: '其他配件', weight: 100, note: '' },
       };
       
       // 初始化组件数据 - 尝试从localStorage加载
       let components = loadFromLocalStorage() || JSON.parse(JSON.stringify(defaultComponents));
-      
-      // 兼容旧数据 - 添加缺失的新组件
-      Object.keys(defaultComponents).forEach(key => {
-        if (!components[key]) {
-          components[key] = JSON.parse(JSON.stringify(defaultComponents[key]));
-        }
-        // 确保每个组件都有category属性
-        if (!components[key].category) {
-          components[key].category = defaultComponents[key].category;
-        }
-      });
       
       let showNotes = false;
       
@@ -474,78 +414,63 @@
         }, 2000);
       }
       
-      // 渲染组件 - 按类别分组显示
+      // 渲染组件
       function renderComponents() {
         componentsGrid.innerHTML = '';
         
-        // 按类别分组渲染
-        Object.keys(categories).forEach(categoryKey => {
-          // 添加类别标题
-          const categoryHeader = document.createElement('div');
-          categoryHeader.className = 'component-category';
-          categoryHeader.textContent = categories[categoryKey];
-          componentsGrid.appendChild(categoryHeader);
+        Object.keys(components).forEach(key => {
+          const component = components[key];
           
-          // 过滤出该类别的组件
-          const categoryComponents = Object.keys(components)
-            .filter(key => components[key].category === categoryKey)
-            .sort((a, b) => components[a].name.localeCompare(components[b].name));
+          const componentDiv = document.createElement('div');
+          componentDiv.className = 'component-item';
           
-          // 渲染该类别的所有组件
-          categoryComponents.forEach(key => {
-            const component = components[key];
-            
-            const componentDiv = document.createElement('div');
-            componentDiv.className = 'component-item';
-            
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'component-header';
-            
-            const label = document.createElement('label');
-            label.className = 'component-label';
-            label.htmlFor = key;
-            label.textContent = `${component.name} (克)`;
-            
-            const weightSpan = document.createElement('span');
-            weightSpan.className = 'component-weight';
-            weightSpan.textContent = `${component.weight}克`;
-            
-            headerDiv.appendChild(label);
-            headerDiv.appendChild(weightSpan);
-            
-            const inputContainer = document.createElement('div');
-            inputContainer.className = 'input-container';
-            
-            const weightInput = document.createElement('input');
-            weightInput.type = 'number';
-            weightInput.id = key;
-            weightInput.value = component.weight;
-            weightInput.addEventListener('input', function(e) {
-              const weight = parseInt(e.target.value) || 0;
-              components[key].weight = weight;
-              weightSpan.textContent = `${weight}克`;
-              calculateTotalWeight();
-              updateConfigList();
-            });
-            
-            inputContainer.appendChild(weightInput);
-            
-            const noteInput = document.createElement('input');
-            noteInput.type = 'text';
-            noteInput.placeholder = '添加备注（品牌/型号）';
-            noteInput.className = showNotes ? 'note-input' : 'note-input hidden';
-            noteInput.value = component.note;
-            noteInput.addEventListener('input', function(e) {
-              components[key].note = e.target.value;
-              updateConfigList();
-            });
-            
-            componentDiv.appendChild(headerDiv);
-            componentDiv.appendChild(inputContainer);
-            componentDiv.appendChild(noteInput);
-            
-            componentsGrid.appendChild(componentDiv);
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'component-header';
+          
+          const label = document.createElement('label');
+          label.className = 'component-label';
+          label.htmlFor = key;
+          label.textContent = `${component.name} (克)`;
+          
+          const weightSpan = document.createElement('span');
+          weightSpan.className = 'component-weight';
+          weightSpan.textContent = `${component.weight}克`;
+          
+          headerDiv.appendChild(label);
+          headerDiv.appendChild(weightSpan);
+          
+          const inputContainer = document.createElement('div');
+          inputContainer.className = 'input-container';
+          
+          const weightInput = document.createElement('input');
+          weightInput.type = 'number';
+          weightInput.id = key;
+          weightInput.value = component.weight;
+          weightInput.addEventListener('input', function(e) {
+            const weight = parseInt(e.target.value) || 0;
+            components[key].weight = weight;
+            weightSpan.textContent = `${weight}克`;
+            calculateTotalWeight();
+            updateConfigList();
           });
+          
+          inputContainer.appendChild(weightInput);
+          
+          const noteInput = document.createElement('input');
+          noteInput.type = 'text';
+          noteInput.placeholder = '添加备注（品牌/型号）';
+          noteInput.className = showNotes ? 'note-input' : 'note-input hidden';
+          noteInput.value = component.note;
+          noteInput.addEventListener('input', function(e) {
+            components[key].note = e.target.value;
+            updateConfigList();
+          });
+          
+          componentDiv.appendChild(headerDiv);
+          componentDiv.appendChild(inputContainer);
+          componentDiv.appendChild(noteInput);
+          
+          componentsGrid.appendChild(componentDiv);
         });
       }
       
@@ -561,66 +486,37 @@
         return total;
       }
       
-      // 更新配置清单 - 按类别分组显示
+      // 更新配置清单
       function updateConfigList() {
         configList.innerHTML = '';
         
-        // 按类别分组显示配置清单
-        Object.keys(categories).forEach(categoryKey => {
-          // 创建类别标题
-          const categoryHeader = document.createElement('div');
-          categoryHeader.style.fontWeight = 'bold';
-          categoryHeader.style.marginTop = '8px';
-          categoryHeader.textContent = categories[categoryKey];
-          configList.appendChild(categoryHeader);
+        Object.keys(components).forEach(key => {
+          const component = components[key];
           
-          // 过滤出该类别的组件
-          const categoryComponents = Object.keys(components)
-            .filter(key => components[key].category === categoryKey)
-            .sort((a, b) => components[a].name.localeCompare(components[b].name));
+          const item = document.createElement('div');
+          item.className = 'config-item';
           
-          // 计算该类别的总重量
-          const categoryWeight = categoryComponents.reduce(
-            (sum, key) => sum + components[key].weight, 0
-          );
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = component.name;
+          if (component.note) {
+            nameSpan.textContent += ` (${component.note})`;
+          }
           
-          // 显示类别总重量
-          const categoryWeightDiv = document.createElement('div');
-          categoryWeightDiv.style.fontSize = '11px';
-          categoryWeightDiv.style.color = '#6b7280';
-          categoryWeightDiv.style.marginBottom = '4px';
-          categoryWeightDiv.textContent = `类别总重: ${categoryWeight}克`;
-          configList.appendChild(categoryWeightDiv);
+          const weightSpan = document.createElement('span');
+          weightSpan.style.fontWeight = '500';
+          weightSpan.textContent = `${component.weight}克`;
           
-          // 显示该类别的所有组件
-          categoryComponents.forEach(key => {
-            const component = components[key];
-            
-            const item = document.createElement('div');
-            item.className = 'config-item';
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = component.name;
-            if (component.note) {
-              nameSpan.textContent += ` (${component.note})`;
-            }
-            
-            const weightSpan = document.createElement('span');
-            weightSpan.style.fontWeight = '500';
-            weightSpan.textContent = `${component.weight}克`;
-            
-            item.appendChild(nameSpan);
-            item.appendChild(weightSpan);
-            
-            configList.appendChild(item);
-          });
+          item.appendChild(nameSpan);
+          item.appendChild(weightSpan);
+          
+          configList.appendChild(item);
         });
       }
       
       // 重置重量
       function resetWeights() {
         Object.keys(components).forEach(key => {
-          const defaultWeight = defaultComponents[key] ? defaultComponents[key].weight : 0;
+          const defaultWeight = defaultComponents[key].weight;
           components[key].weight = defaultWeight;
         });
         
@@ -643,7 +539,7 @@
         const dataToExport = {
           components: components,
           exportDate: new Date().toISOString(),
-          version: '1.1' // 更新版本号
+          version: '1.0'
         };
         
         const jsonString = JSON.stringify(dataToExport, null, 2);
@@ -668,18 +564,6 @@
               
               if (isValid) {
                 components = importedData.components;
-                
-                // 确保所有新增组件都存在
-                Object.keys(defaultComponents).forEach(key => {
-                  if (!components[key]) {
-                    components[key] = JSON.parse(JSON.stringify(defaultComponents[key]));
-                  }
-                  // 确保每个组件都有category属性
-                  if (!components[key].category) {
-                    components[key].category = defaultComponents[key].category;
-                  }
-                });
-                
                 renderComponents();
                 calculateTotalWeight();
                 updateConfigList();
@@ -706,13 +590,14 @@
       // 验证导入的数据
       function validateImportedData(data) {
         // 检查是否包含所有必要的组件
-        const requiredKeys = ['frame', 'wheels']; // 最基本的必要组件
+        const requiredKeys = Object.keys(defaultComponents);
         const importedKeys = Object.keys(data);
         
         // 检查是否至少包含一些关键组件
-        const hasRequiredKeys = requiredKeys.every(key => importedKeys.includes(key));
+        const essentialKeys = ['frame', 'wheels', 'groupset'];
+        const hasEssentialKeys = essentialKeys.every(key => importedKeys.includes(key));
         
-        if (!hasRequiredKeys) return false;
+        if (!hasEssentialKeys) return false;
         
         // 检查每个组件是否有正确的结构
         for (const key of importedKeys) {
@@ -729,6 +614,13 @@
           // 确保note属性存在
           if (component.note === undefined) {
             component.note = '';
+          }
+        }
+        
+        // 添加缺失的组件
+        for (const key of requiredKeys) {
+          if (!data[key]) {
+            data[key] = JSON.parse(JSON.stringify(defaultComponents[key]));
           }
         }
         
@@ -789,4 +681,27 @@
       
       // 导出模态框事件
       copyExportBtn.addEventListener('click', copyExportData);
-      downloadExportBtn.addEventListener('
+      downloadExportBtn.addEventListener('click', downloadExportData);
+      document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', closeModal);
+      });
+      exportModal.addEventListener('click', function(e) {
+        if (e.target === exportModal) {
+          closeModal();
+        }
+      });
+      
+      // 自动保存功能 - 每30秒保存一次
+      setInterval(saveToLocalStorage, 30000);
+      
+      // 页面关闭前保存
+      window.addEventListener('beforeunload', saveToLocalStorage);
+      
+      // 初始化
+      renderComponents();
+      calculateTotalWeight();
+      updateConfigList();
+    });
+  </script>
+</body>
+</html>
