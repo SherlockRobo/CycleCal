@@ -1,0 +1,196 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Scale, Plus, Minus } from 'lucide-react';
+
+const RoadBikeWeightCalculator = () => {
+  const [components, setComponents] = useState({
+    frame: { name: '车架', weight: 900, note: '' },
+    fork: { name: '前叉', weight: 350, note: '' },
+    handlebar: { name: '车把', weight: 220, note: '' },
+    stem: { name: '把立', weight: 120, note: '' },
+    seatpost: { name: '座管', weight: 200, note: '' },
+    saddle: { name: '座垫', weight: 180, note: '' },
+    groupset: { name: '变速套件', weight: 2200, note: '' },
+    wheels: { name: '车轮组', weight: 1600, note: '' },
+    outerTires: { name: '外胎(一对)', weight: 400, note: '' },
+    innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
+    pedals: { name: '脚踏', weight: 250, note: '' },
+    bottleCages: { name: '水壶架', weight: 60, note: '' },
+    computer: { name: '码表', weight: 80, note: '' },
+    computerMount: { name: '码表架', weight: 30, note: '' },
+    other: { name: '其他配件', weight: 100, note: '' },
+  });
+  
+  const [totalWeight, setTotalWeight] = useState(0);
+  const [showNotes, setShowNotes] = useState(false);
+  
+  useEffect(() => {
+    calculateTotalWeight();
+  }, [components]);
+  
+  const handleWeightChange = (component, value) => {
+    const weight = parseInt(value) || 0;
+    setComponents({
+      ...components,
+      [component]: { ...components[component], weight }
+    });
+  };
+  
+  const handleNoteChange = (component, value) => {
+    setComponents({
+      ...components,
+      [component]: { ...components[component], note: value }
+    });
+  };
+  
+  const calculateTotalWeight = () => {
+    const total = Object.values(components).reduce(
+      (sum, component) => sum + component.weight, 0
+    );
+    setTotalWeight(total);
+  };
+  
+  const resetWeights = () => {
+    setComponents({
+      frame: { name: '车架', weight: 900, note: components.frame.note },
+      fork: { name: '前叉', weight: 350, note: components.fork.note },
+      handlebar: { name: '车把', weight: 220, note: components.handlebar.note },
+      stem: { name: '把立', weight: 120, note: components.stem.note },
+      seatpost: { name: '座管', weight: 200, note: components.seatpost.note },
+      saddle: { name: '座垫', weight: 180, note: components.saddle.note },
+      groupset: { name: '变速套件', weight: 2200, note: components.groupset.note },
+      wheels: { name: '车轮组', weight: 1600, note: components.wheels.note },
+      outerTires: { name: '外胎(一对)', weight: 400, note: components.outerTires.note },
+      innerTubes: { name: '内胎(一对)', weight: 100, note: components.innerTubes.note },
+      pedals: { name: '脚踏', weight: 250, note: components.pedals.note },
+      bottleCages: { name: '水壶架', weight: 60, note: components.bottleCages.note },
+      computer: { name: '码表', weight: 80, note: components.computer.note },
+      computerMount: { name: '码表架', weight: 30, note: components.computerMount.note },
+      other: { name: '其他配件', weight: 100, note: components.other.note },
+    });
+  };
+  
+  const resetAll = () => {
+    setComponents({
+      frame: { name: '车架', weight: 900, note: '' },
+      fork: { name: '前叉', weight: 350, note: '' },
+      handlebar: { name: '车把', weight: 220, note: '' },
+      stem: { name: '把立', weight: 120, note: '' },
+      seatpost: { name: '座管', weight: 200, note: '' },
+      saddle: { name: '座垫', weight: 180, note: '' },
+      groupset: { name: '变速套件', weight: 2200, note: '' },
+      wheels: { name: '车轮组', weight: 1600, note: '' },
+      outerTires: { name: '外胎(一对)', weight: 400, note: '' },
+      innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
+      pedals: { name: '脚踏', weight: 250, note: '' },
+      bottleCages: { name: '水壶架', weight: 60, note: '' },
+      computer: { name: '码表', weight: 80, note: '' },
+      computerMount: { name: '码表架', weight: 30, note: '' },
+      other: { name: '其他配件', weight: 100, note: '' },
+    });
+  };
+  
+  return (
+    <Card className="p-6 max-w-lg mx-auto bg-white shadow-lg">
+      <div className="flex items-center justify-center mb-4">
+        <Scale className="mr-2 text-blue-500" />
+        <h2 className="text-2xl font-bold text-center">公路车重量计算器</h2>
+      </div>
+      
+      <Separator className="my-4" />
+      
+      <div className="flex justify-end mb-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowNotes(!showNotes)}
+          className="text-xs"
+        >
+          {showNotes ? '隐藏备注' : '显示备注'}
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.keys(components).map((key) => (
+          <div key={key} className="mb-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor={key} className="text-sm font-medium">
+                {components[key].name} (克)
+              </Label>
+              <span className="text-xs text-blue-600 font-medium">
+                {components[key].weight}克
+              </span>
+            </div>
+            <div className="flex gap-2 mt-1">
+              <Input
+                id={key}
+                type="number"
+                value={components[key].weight}
+                onChange={(e) => handleWeightChange(key, e.target.value)}
+                className="w-full"
+              />
+            </div>
+            {showNotes && (
+              <Input
+                placeholder="添加备注（品牌/型号）"
+                value={components[key].note}
+                onChange={(e) => handleNoteChange(key, e.target.value)}
+                className="mt-1 text-xs"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      
+      <Separator className="my-4" />
+      
+      <div className="flex flex-col items-center mt-4">
+        <div className="text-xl font-bold mb-2">
+          总重量: <span className="text-blue-600">{totalWeight}</span> 克 
+          (<span className="text-blue-600">{(totalWeight / 1000).toFixed(2)}</span> 公斤)
+        </div>
+        
+        <div className="flex gap-2 mt-2">
+          <Button 
+            onClick={resetWeights}
+            variant="outline" 
+          >
+            重置重量
+          </Button>
+          <Button 
+            onClick={resetAll}
+            variant="outline" 
+            className="text-red-500"
+          >
+            重置全部
+          </Button>
+        </div>
+      </div>
+      
+      <div className="mt-6">
+        <h3 className="font-medium text-sm mb-2">配置清单:</h3>
+        <div className="text-xs space-y-1 max-h-40 overflow-y-auto border p-2 rounded">
+          {Object.keys(components).map((key) => (
+            <div key={key} className="flex justify-between">
+              <span>
+                {components[key].name}
+                {components[key].note && ` (${components[key].note})`}
+              </span>
+              <span className="font-medium">{components[key].weight}克</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="mt-4 text-xs text-gray-500 text-center">
+        注：此计算器提供的是估算值，实际车辆重量可能因材质和规格而有所不同。
+      </div>
+    </Card>
+  );
+};
+
+export default RoadBikeWeightCalculator;
