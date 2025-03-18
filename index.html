@@ -1,202 +1,434 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Scale, Plus, Minus } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公路车重量计算器</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    .card {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .header h2 {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .header svg {
+      margin-right: 8px;
+      color: #3b82f6;
+    }
+    .separator {
+      height: 1px;
+      width: 100%;
+      background-color: #e5e7eb;
+      margin: 16px 0;
+    }
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .component-item {
+      margin-bottom: 8px;
+    }
+    .component-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .component-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .component-weight {
+      font-size: 12px;
+      font-weight: 500;
+      color: #2563eb;
+    }
+    .input-container {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+    .note-input {
+      margin-top: 4px;
+      font-size: 12px;
+    }
+    button {
+      cursor: pointer;
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      background-color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .button-primary {
+      background-color: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    .button-danger {
+      color: #ef4444;
+    }
+    .total-weight {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 16px;
+    }
+    .total-weight-value {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .total-weight-value span {
+      color: #2563eb;
+    }
+    .buttons-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .config-list {
+      margin-top: 24px;
+    }
+    .config-list h3 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .config-items {
+      font-size: 12px;
+      max-height: 160px;
+      overflow-y: auto;
+      border: 1px solid #d1d5db;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .config-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .footer-note {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+      </svg>
+      <h2>公路车重量计算器</h2>
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div class="button-container">
+      <button id="toggleNotes">显示备注</button>
+    </div>
+    
+    <div class="grid" id="componentsGrid">
+      <!-- 组件将通过JavaScript动态生成 -->
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div class="total-weight">
+      <div class="total-weight-value">
+        总重量: <span id="totalWeightGrams">0</span> 克 
+        (<span id="totalWeightKg">0.00</span> 公斤)
+      </div>
+      
+      <div class="buttons-group">
+        <button id="resetWeights">重置重量</button>
+        <button id="resetAll" class="button-danger">重置全部</button>
+      </div>
+    </div>
+    
+    <div class="config-list">
+      <h3>配置清单:</h3>
+      <div class="config-items" id="configList">
+        <!-- 配置清单将通过JavaScript动态生成 -->
+      </div>
+    </div>
+    
+    <div class="footer-note">
+      注：此计算器提供的是估算值，实际车辆重量可能因材质和规格而有所不同。
+    </div>
+  </div>
 
-const RoadBikeWeightCalculator = () => {
-  const [components, setComponents] = useState({
-    frame: { name: '车架', weight: 900, note: '' },
-    fork: { name: '前叉', weight: 350, note: '' },
-    handlebar: { name: '车把', weight: 220, note: '' },
-    stem: { name: '把立', weight: 120, note: '' },
-    seatpost: { name: '座管', weight: 200, note: '' },
-    saddle: { name: '座垫', weight: 180, note: '' },
-    groupset: { name: '变速套件', weight: 2200, note: '' },
-    chain: { name: '链条', weight: 250, note: '' },
-    wheels: { name: '车轮组', weight: 1600, note: '' },
-    outerTires: { name: '外胎(一对)', weight: 400, note: '' },
-    innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
-    pedals: { name: '脚踏', weight: 250, note: '' },
-    bottleCages: { name: '水壶架', weight: 60, note: '' },
-    computer: { name: '码表', weight: 80, note: '' },
-    computerMount: { name: '码表架', weight: 30, note: '' },
-    bolts: { name: '螺丝配件', weight: 120, note: '' },
-    other: { name: '其他配件', weight: 100, note: '' },
-  });
-  
-  const [totalWeight, setTotalWeight] = useState(0);
-  const [showNotes, setShowNotes] = useState(false);
-  
-  useEffect(() => {
-    calculateTotalWeight();
-  }, [components]);
-  
-  const handleWeightChange = (component, value) => {
-    const weight = parseInt(value) || 0;
-    setComponents({
-      ...components,
-      [component]: { ...components[component], weight }
-    });
-  };
-  
-  const handleNoteChange = (component, value) => {
-    setComponents({
-      ...components,
-      [component]: { ...components[component], note: value }
-    });
-  };
-  
-  const calculateTotalWeight = () => {
-    const total = Object.values(components).reduce(
-      (sum, component) => sum + component.weight, 0
-    );
-    setTotalWeight(total);
-  };
-  
-  const resetWeights = () => {
-    setComponents({
-      frame: { name: '车架', weight: 900, note: components.frame.note },
-      fork: { name: '前叉', weight: 350, note: components.fork.note },
-      handlebar: { name: '车把', weight: 220, note: components.handlebar.note },
-      stem: { name: '把立', weight: 120, note: components.stem.note },
-      seatpost: { name: '座管', weight: 200, note: components.seatpost.note },
-      saddle: { name: '座垫', weight: 180, note: components.saddle.note },
-      groupset: { name: '变速套件', weight: 2200, note: components.groupset.note },
-      chain: { name: '链条', weight: 250, note: components.chain.note },
-      wheels: { name: '车轮组', weight: 1600, note: components.wheels.note },
-      outerTires: { name: '外胎(一对)', weight: 400, note: components.outerTires.note },
-      innerTubes: { name: '内胎(一对)', weight: 100, note: components.innerTubes.note },
-      pedals: { name: '脚踏', weight: 250, note: components.pedals.note },
-      bottleCages: { name: '水壶架', weight: 60, note: components.bottleCages.note },
-      computer: { name: '码表', weight: 80, note: components.computer.note },
-      computerMount: { name: '码表架', weight: 30, note: components.computerMount.note },
-      bolts: { name: '螺丝配件', weight: 120, note: components.bolts.note },
-      other: { name: '其他配件', weight: 100, note: components.other.note },
-    });
-  };
-  
-  const resetAll = () => {
-    setComponents({
-      frame: { name: '车架', weight: 900, note: '' },
-      fork: { name: '前叉', weight: 350, note: '' },
-      handlebar: { name: '车把', weight: 220, note: '' },
-      stem: { name: '把立', weight: 120, note: '' },
-      seatpost: { name: '座管', weight: 200, note: '' },
-      saddle: { name: '座垫', weight: 180, note: '' },
-      groupset: { name: '变速套件', weight: 2200, note: '' },
-      chain: { name: '链条', weight: 250, note: '' },
-      wheels: { name: '车轮组', weight: 1600, note: '' },
-      outerTires: { name: '外胎(一对)', weight: 400, note: '' },
-      innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
-      pedals: { name: '脚踏', weight: 250, note: '' },
-      bottleCages: { name: '水壶架', weight: 60, note: '' },
-      computer: { name: '码表', weight: 80, note: '' },
-      computerMount: { name: '码表架', weight: 30, note: '' },
-      bolts: { name: '螺丝配件', weight: 120, note: '' },
-      other: { name: '其他配件', weight: 100, note: '' },
-    });
-  };
-  
-  return (
-    <Card className="p-6 max-w-lg mx-auto bg-white shadow-lg">
-      <div className="flex items-center justify-center mb-4">
-        <Scale className="mr-2 text-blue-500" />
-        <h2 className="text-2xl font-bold text-center">公路车重量计算器</h2>
-      </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化组件数据
+      const components = {
+        frame: { name: '车架', weight: 900, note: '' },
+        fork: { name: '前叉', weight: 350, note: '' },
+        handlebar: { name: '车把', weight: 220, note: '' },
+        stem: { name: '把立', weight: 120, note: '' },
+        seatpost: { name: '座管', weight: 200, note: '' },
+        saddle: { name: '座垫', weight: 180, note: '' },
+        groupset: { name: '变速套件', weight: 2200, note: '' },
+        chain: { name: '链条', weight: 250, note: '' },
+        wheels: { name: '车轮组', weight: 1600, note: '' },
+        outerTires: { name: '外胎(一对)', weight: 400, note: '' },
+        innerTubes: { name: '内胎(一对)', weight: 100, note: '' },
+        pedals: { name: '脚踏', weight: 250, note: '' },
+        bottleCages: { name: '水壶架', weight: 60, note: '' },
+        computer: { name: '码表', weight: 80, note: '' },
+        computerMount: { name: '码表架', weight: 30, note: '' },
+        bolts: { name: '螺丝配件', weight: 120, note: '' },
+        other: { name: '其他配件', weight: 100, note: '' },
+      };
       
-      <Separator className="my-4" />
+      let showNotes = false;
       
-      <div className="flex justify-end mb-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => setShowNotes(!showNotes)}
-          className="text-xs"
-        >
-          {showNotes ? '隐藏备注' : '显示备注'}
-        </Button>
-      </div>
+      // 获取DOM元素
+      const componentsGrid = document.getElementById('componentsGrid');
+      const toggleNotesBtn = document.getElementById('toggleNotes');
+      const resetWeightsBtn = document.getElementById('resetWeights');
+      const resetAllBtn = document.getElementById('resetAll');
+      const totalWeightGrams = document.getElementById('totalWeightGrams');
+      const totalWeightKg = document.getElementById('totalWeightKg');
+      const configList = document.getElementById('configList');
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.keys(components).map((key) => (
-          <div key={key} className="mb-2">
-            <div className="flex justify-between items-center">
-              <Label htmlFor={key} className="text-sm font-medium">
-                {components[key].name} (克)
-              </Label>
-              <span className="text-xs text-blue-600 font-medium">
-                {components[key].weight}克
-              </span>
-            </div>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id={key}
-                type="number"
-                value={components[key].weight}
-                onChange={(e) => handleWeightChange(key, e.target.value)}
-                className="w-full"
-              />
-            </div>
-            {showNotes && (
-              <Input
-                placeholder="添加备注（品牌/型号）"
-                value={components[key].note}
-                onChange={(e) => handleNoteChange(key, e.target.value)}
-                className="mt-1 text-xs"
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      
-      <Separator className="my-4" />
-      
-      <div className="flex flex-col items-center mt-4">
-        <div className="text-xl font-bold mb-2">
-          总重量: <span className="text-blue-600">{totalWeight}</span> 克 
-          (<span className="text-blue-600">{(totalWeight / 1000).toFixed(2)}</span> 公斤)
-        </div>
+      // 渲染组件
+      function renderComponents() {
+        componentsGrid.innerHTML = '';
         
-        <div className="flex gap-2 mt-2">
-          <Button 
-            onClick={resetWeights}
-            variant="outline" 
-          >
-            重置重量
-          </Button>
-          <Button 
-            onClick={resetAll}
-            variant="outline" 
-            className="text-red-500"
-          >
-            重置全部
-          </Button>
-        </div>
-      </div>
+        Object.keys(components).forEach(key => {
+          const component = components[key];
+          
+          const componentDiv = document.createElement('div');
+          componentDiv.className = 'component-item';
+          
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'component-header';
+          
+          const label = document.createElement('label');
+          label.className = 'component-label';
+          label.htmlFor = key;
+          label.textContent = `${component.name} (克)`;
+          
+          const weightSpan = document.createElement('span');
+          weightSpan.className = 'component-weight';
+          weightSpan.textContent = `${component.weight}克`;
+          
+          headerDiv.appendChild(label);
+          headerDiv.appendChild(weightSpan);
+          
+          const inputContainer = document.createElement('div');
+          inputContainer.className = 'input-container';
+          
+          const weightInput = document.createElement('input');
+          weightInput.type = 'number';
+          weightInput.id = key;
+          weightInput.value = component.weight;
+          weightInput.addEventListener('input', function(e) {
+            const weight = parseInt(e.target.value) || 0;
+            components[key].weight = weight;
+            weightSpan.textContent = `${weight}克`;
+            calculateTotalWeight();
+            updateConfigList();
+          });
+          
+          inputContainer.appendChild(weightInput);
+          
+          const noteInput = document.createElement('input');
+          noteInput.type = 'text';
+          noteInput.placeholder = '添加备注（品牌/型号）';
+          noteInput.className = showNotes ? 'note-input' : 'note-input hidden';
+          noteInput.value = component.note;
+          noteInput.addEventListener('input', function(e) {
+            components[key].note = e.target.value;
+            updateConfigList();
+          });
+          
+          componentDiv.appendChild(headerDiv);
+          componentDiv.appendChild(inputContainer);
+          componentDiv.appendChild(noteInput);
+          
+          componentsGrid.appendChild(componentDiv);
+        });
+      }
       
-      <div className="mt-6">
-        <h3 className="font-medium text-sm mb-2">配置清单:</h3>
-        <div className="text-xs space-y-1 max-h-40 overflow-y-auto border p-2 rounded">
-          {Object.keys(components).map((key) => (
-            <div key={key} className="flex justify-between">
-              <span>
-                {components[key].name}
-                {components[key].note && ` (${components[key].note})`}
-              </span>
-              <span className="font-medium">{components[key].weight}克</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      // 计算总重量
+      function calculateTotalWeight() {
+        const total = Object.values(components).reduce(
+          (sum, component) => sum + component.weight, 0
+        );
+        
+        totalWeightGrams.textContent = total;
+        totalWeightKg.textContent = (total / 1000).toFixed(2);
+        
+        return total;
+      }
       
-      <div className="mt-4 text-xs text-gray-500 text-center">
-        注：此计算器提供的是估算值，实际车辆重量可能因材质和规格而有所不同。
-      </div>
-    </Card>
-  );
-};
-
-export default RoadBikeWeightCalculator;
+      // 更新配置清单
+      function updateConfigList() {
+        configList.innerHTML = '';
+        
+        Object.keys(components).forEach(key => {
+          const component = components[key];
+          
+          const item = document.createElement('div');
+          item.className = 'config-item';
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = component.name;
+          if (component.note) {
+            nameSpan.textContent += ` (${component.note})`;
+          }
+          
+          const weightSpan = document.createElement('span');
+          weightSpan.style.fontWeight = '500';
+          weightSpan.textContent = `${component.weight}克`;
+          
+          item.appendChild(nameSpan);
+          item.appendChild(weightSpan);
+          
+          configList.appendChild(item);
+        });
+      }
+      
+      // 重置重量
+      function resetWeights() {
+        Object.keys(components).forEach(key => {
+          const defaultWeights = {
+            frame: 900,
+            fork: 350,
+            handlebar: 220,
+            stem: 120,
+            seatpost: 200,
+            saddle: 180,
+            groupset: 2200,
+            chain: 250,
+            wheels: 1600,
+            outerTires: 400,
+            innerTubes: 100,
+            pedals: 250,
+            bottleCages: 60,
+            computer: 80,
+            computerMount: 30,
+            bolts: 120,
+            other: 100,
+          };
+          
+          components[key].weight = defaultWeights[key];
+        });
+        
+        renderComponents();
+        calculateTotalWeight();
+        updateConfigList();
+      }
+      
+      // 重置全部
+      function resetAll() {
+        Object.keys(components).forEach(key => {
+          const defaultWeights = {
+            frame: 900,
+            fork: 350,
+            handlebar: 220,
+            stem: 120,
+            seatpost: 200,
+            saddle: 180,
+            groupset: 2200,
+            chain: 250,
+            wheels: 1600,
+            outerTires: 400,
+            innerTubes: 100,
+            pedals: 250,
+            bottleCages: 60,
+            computer: 80,
+            computerMount: 30,
+            bolts: 120,
+            other: 100,
+          };
+          
+          components[key].weight = defaultWeights[key];
+          components[key].note = '';
+        });
+        
+        renderComponents();
+        calculateTotalWeight();
+        updateConfigList();
+      }
+      
+      // 切换备注显示
+      toggleNotesBtn.addEventListener('click', function() {
+        showNotes = !showNotes;
+        this.textContent = showNotes ? '隐藏备注' : '显示备注';
+        
+        const noteInputs = document.querySelectorAll('.note-input');
+        noteInputs.forEach(input => {
+          if (showNotes) {
+            input.classList.remove('hidden');
+          } else {
+            input.classList.add('hidden');
+          }
+        });
+      });
+      
+      // 重置按钮事件
+      resetWeightsBtn.addEventListener('click', resetWeights);
+      resetAllBtn.addEventListener('click', resetAll);
+      
+      // 初始化
+      renderComponents();
+      calculateTotalWeight();
+      updateConfigList();
+    });
+  </script>
+</body>
+</html>
